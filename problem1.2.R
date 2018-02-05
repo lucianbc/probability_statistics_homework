@@ -14,11 +14,9 @@ plotBin <- function() {
   axis(2)
   title(xlab = "points", ylab = "mass")
   
-  
   apply(params, 1, function(r) {
     d = dbinom(points, as.numeric(r["n"]), as.numeric(r["p"]))
-    print(r["c"])
-    points(points, d, col = r["c"])
+    points(points, d, col = r["c"], pch = 19)
   })
 }
 

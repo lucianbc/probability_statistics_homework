@@ -1,0 +1,200 @@
+---
+title: "Raport"
+author: "Lucian Boaca"
+date: "February 6, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problema 1
+Considerăm următoarele distribuții: Bin(*n*, *p*), Pois($\lambda$), Exp($\lambda$), $\mathcal{N}(\mu, \sigma^2)$.
+
+1. Generăm *N* = 1000 de realizări independente din fiecare repartiție și calculăm media și varianța eșantionului.
+
+```{r}
+N = 1000
+
+binomials = rbinom(N, size = 50, prob = .65)
+poissons = rpois(N, lambda = 3)
+exponentials = rexp(N, rate = 3)
+normals = rnorm(N, mean = 5, sd = 1.3)
+
+binomial_mean = mean(binomials)
+binomial_variance = var(binomials)
+
+pois_mean = mean(poissons)
+pois_variance = var(poissons)
+
+exponential_mean = mean(exponentials)
+exponential_variance = var(exponentials)
+
+normal_mean = mean(normals)
+normal_variance = var(normals)
+```
+
+2. Ilustratii grafice pentru functiile de masa, respectiv de densitate, pentru repartițiile date.
+
+Consideram 5 seturi de parametri pentru fiecare repartitie
+```{r echo = FALSE}
+# definim un vector de 5 culori folosit pentru fiecare distributie
+colors = c("red", "green", "yellow", "purple", "black")
+
+binomial_params = matrix(c(40, 40, 30, 20, 50, .7, .2, .6, .7, .8, colors), ncol = 5, byrow = TRUE)
+dimnames(binomial_params) = list(c("n", "p", "color"))
+
+poisson_params = matrix(c(1.3, 2.1, 4, 8.7, 4, colors), ncol = 5, byrow = TRUE)
+dimnames(poisson_params) = list(c("lambda", "color"))
+
+exponential_params = matrix(c(0.4, 0.7, 1.3, 2.1, 4, colors), ncol = 5, byrow = TRUE)
+dimnames(exponential_params) = list(c("lambda", "color"))
+
+normal_params = matrix(c(-1, 0, 1.5, 2.5, 4, .3, 2, .5, 1.5, 4, colors), ncol = 5, byrow = TRUE)
+dimnames(normal_params) = list(c("mean", "std_dev", "color"))
+```
+Binomiala:
+```{r echo=FALSE}
+binomial_params
+```
+
+Poisson:
+```{r echo=FALSE}
+poisson_params
+```
+
+Exponentiala:
+```{r echo=FALSE}
+exponential_params
+```
+
+Normala:
+```{r echo=FALSE}
+normal_params
+```
+Avand seturile de parametri, trasăm graficele funcțiilor de masă, respectiv de densitate
+
+```{r echo=FALSE}
+plot <- function(params, x_axis, y_axis, x_lab, y_lab, lgd, tt = NULL, func) {
+  plot.new()
+  plot.window(xlim = x_axis, ylim = y_axis)
+  axis(1)
+  axis(2)
+  title(main = tt, xlab = x_lab, ylab = y_lab)
+  
+  apply(params, 2, func)
+  
+  legend("topright", bty = "n", legend = lgd, fill = params["color",])
+  grid()
+}
+
+plot(binomial_params, 
+     c(0, 50), 
+     c(0, .25), 
+     "x", 
+     "masa", 
+     paste("(n, p) = ", binomial_params[1, ], binomial_params[2,]), 
+     "Binomiala", 
+     function(r) {
+      pts = seq(from = 0, to = 50, by = 1)
+      d = dbinom(pts, as.numeric(r["n"]), as.numeric(r["p"]))
+      points(pts, d, col = r["color"], pch = 19)
+  }
+)
+
+plot(poisson_params,
+     c(-1, 30),
+     c(0, .5),
+     "x",
+     "masa",
+     paste("l = ", poisson_params[1,]),
+     "Poisson",
+     function(r) {
+       pts = seq(from = -1, to = 30, by = 1)
+       m = dpois(pts, as.numeric(r[1]))
+       points(pts, m, col = r["color"], pch = 19, cex = .8)
+     })
+
+plot(exponential_params,
+     c(-1.5, 7),
+     c(0, 4.3),
+     "x",
+     "densitate",
+     paste("l = ", exponential_params[1,]),
+     "Exponentiala",
+     function(r) {
+       pts = seq(from = -1.5, to = 7, by = .1)
+       p = dexp(pts, as.numeric(r[1]))
+       lines(pts, p, col = r["color"])
+     })
+
+plot(normal_params,
+     c(-5, 10),
+     c(0, 1.5),
+     "x",
+     "densitate",
+     paste("l = ", normal_params[1,], normal_params[2,]),
+     "Normala",
+     function(r) {
+       pts = seq(from = -5, to = 10, by = .1)
+       p = dnorm(pts, as.numeric(r[1]), as.numeric(r[2]))
+       lines(pts, p, col = r["color"])
+     })
+```
+3. Pentru fiecare dintre seturile de parametri considerați, trasăm și funcțiile de repartiție
+
+```{r echo=FALSE}
+plot(binomial_params, 
+     c(0, 50), 
+     c(0, 1), 
+     "x", 
+     "repartitie", 
+     paste("(n, p) = ", binomial_params[1, ], binomial_params[2,]), 
+     "Binomiala", 
+     function(r) {
+      pts = seq(from = 0, to = 50, by = 1)
+      d = pbinom(pts, as.numeric(r["n"]), as.numeric(r["p"]))
+      lines(pts, d, col = r["color"])
+  }
+)
+
+plot(poisson_params,
+     c(-1, 30),
+     c(0, 1),
+     "x",
+     "repartitie",
+     paste("l = ", poisson_params[1,]),
+     "Poisson",
+     function(r) {
+       pts = seq(from = -1, to = 30, by = 1)
+       m = ppois(pts, as.numeric(r[1]))
+       lines(pts, m, col = r["color"])
+     })
+
+plot(exponential_params,
+     c(-1.5, 7),
+     c(0, 1),
+     "x",
+     "repartitie",
+     paste("l = ", exponential_params[1,]),
+     "Exponentiala",
+     function(r) {
+       pts = seq(from = -1.5, to = 7, by = .1)
+       p = pexp(pts, as.numeric(r[1]))
+       lines(pts, p, col = r["color"])
+     })
+
+plot(normal_params,
+     c(-5, 10),
+     c(0, 1),
+     "x",
+     "repartitie",
+     paste("l = ", normal_params[1,], normal_params[2,]),
+     "Normala",
+     function(r) {
+       pts = seq(from = -5, to = 10, by = .1)
+       p = pnorm(pts, as.numeric(r[1]), as.numeric(r[2]))
+       lines(pts, p, col = r["color"])
+     })
+```
